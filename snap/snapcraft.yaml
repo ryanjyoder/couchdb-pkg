@@ -10,16 +10,13 @@ apps:
         daemon: simple
         command: rel/couchdb/bin/snap_run
         plugs: [network-bind, process-control]
-    couchdb:
-        command: rel/couchdb/bin/snap_run
-        plugs: [network-bind, mount-observe, browser-support]
 parts:
     couchdb: 
         plugin: make
-        source: http://www-us.apache.org/dist/couchdb/source/2.3.1/apache-couchdb-2.3.1.tar.gz
-        #source: https://github.com/apache/couchdb.git
-        #source-type: git
-        #source-tag: 2.2.0
+        #source: http://www-us.apache.org/dist/couchdb/source/2.3.1/apache-couchdb-2.3.1.tar.gz
+        source: https://github.com/apache/couchdb.git
+        source-type: git
+        #source-tag: 2.3.1
         override-build: |
           ./configure --disable-docs
           make release
