@@ -11,7 +11,7 @@ apps:
         command: rel/couchdb/bin/snap_run
         plugs: [network-bind, process-control]
         environment:
-            LD_LIBRARY_PATH: $SNAP/usr/lib:$LD_LIBRARY_PATH
+            LD_LIBRARY_PATH: $SNAP/usr/lib:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
 parts:
     couchdb: 
         plugin: make
