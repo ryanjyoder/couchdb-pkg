@@ -18,7 +18,7 @@ parts:
         #source: http://www-us.apache.org/dist/couchdb/source/2.3.1/apache-couchdb-2.3.1.tar.gz
         source: https://github.com/apache/couchdb.git
         source-type: git
-        source-tag: 2.3.1
+        source-tag: 2.3.0
         override-build: |
           ./configure --disable-docs
           make release
