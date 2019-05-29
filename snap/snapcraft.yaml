@@ -53,6 +53,7 @@ parts:
         prime:
             - rel
             - bin
+        after: [packages]
 
     snap-config:
         plugin: dump
@@ -63,9 +64,22 @@ parts:
 
     packages:
         plugin: nil
+        source: .
         stage-packages:
-            - libicu55
-            - libmozjs185-1.0
+          - libicu55
+          - libnspr4
+          - libicu-dev
+        build-packages:
+          - devscripts
+          - debhelper
+          - zip 
+          - pkg-kde-tools 
+          - pkg-config
+        override-build: |
+          make couch-js-debs PLATFORM=bionic
+          ls -1 js/ | grep ".deb$" | xargs -i++ dpkg -x js/++ .
+          mkdir -p $SNAPCRAFT_PART_INSTALL/usr
+          cp -ra ./usr/lib $SNAPCRAFT_PART_INSTALL/usr
         filesets:
             exclusion:
               - "-usr/share/doc/*"
