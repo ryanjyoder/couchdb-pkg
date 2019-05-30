@@ -75,10 +75,13 @@ parts:
           - pkg-kde-tools 
           - pkg-config
           - libffi-dev
+          - libnspr4-dev
         override-build: |
           make couch-js-debs PLATFORM=bionic
+          echo installing libmoz
           ls -1 js/ | grep ".deb$" | xargs -i++ dpkg -i js/++ 
-          ls -1 js/ | grep ".deb$" | xargs -i++ dpkg -x js/++ .
+          echo extracting libmoz
+          ls -1 js/ | grep "\.deb$" | xargs -i++ dpkg -x js/++ .
           mkdir -p $SNAPCRAFT_PART_INSTALL/usr
           cp -ra ./usr/lib $SNAPCRAFT_PART_INSTALL/usr
         filesets:
