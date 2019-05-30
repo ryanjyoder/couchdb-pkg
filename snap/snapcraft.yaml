@@ -76,6 +76,7 @@ parts:
           - pkg-config
           - libffi-dev
           - libnspr4-dev
+          - libgcc1
         override-build: |
           make couch-js-debs PLATFORM=bionic
           echo installing libmoz
