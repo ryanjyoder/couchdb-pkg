@@ -44,8 +44,8 @@ parts:
           - erlang-syntax-tools
           # For fauxton
           - nodejs-dev
-          - nodejs
-          - npm
+          - nodejs-legacy
+- npm
         stage:
             - rel
             - bin
