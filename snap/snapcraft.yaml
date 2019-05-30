@@ -35,7 +35,6 @@ parts:
           - erlang-base
           - erlang-reltool
           - libcurl4-openssl-dev
-          - libmozjs185-dev
           - libnspr4-dev
           - libicu-dev
           - icu-devtools
