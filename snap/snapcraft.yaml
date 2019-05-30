@@ -44,7 +44,7 @@ parts:
           - erlang-syntax-tools
           # For fauxton
           - nodejs-dev
-          - nodejs
+          - nodejs-legacy
           - npm
         stage:
             - rel
@@ -77,7 +77,10 @@ parts:
           - libnspr4-dev
         override-build: |
           make couch-js-debs PLATFORM=bionic
-          ls -1 js/ | grep ".deb$" | xargs -i++ dpkg -x js/++ .
+          echo installing libmoz
+          ls -1 js/ | grep ".deb$" | xargs -i++ dpkg -i js/++ 
+          echo extracting libmoz
+          ls -1 js/ | grep "\.deb$" | xargs -i++ dpkg -x js/++ .
           mkdir -p $SNAPCRAFT_PART_INSTALL/usr
           cp -ra ./usr/lib $SNAPCRAFT_PART_INSTALL/usr
         filesets:
@@ -86,4 +89,3 @@ parts:
               - "-usr/share/man/*"
         prime:
             - "$exclusion"
-
