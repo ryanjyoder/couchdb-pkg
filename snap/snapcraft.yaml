@@ -4,7 +4,7 @@ summary: Document based database
 description: CouchDB is a database that completely embraces the web. Store your data with JSON documents. Access your documents and query your indexes with your web browser, via HTTP. Index, combine, and transform your documents with JavaScript. 
 confinement: strict
 grade: stable
-base: core18
+base: core
 
 apps:
     server:
@@ -34,7 +34,7 @@ parts:
           - erlang-dev
           - erlang-base
           - erlang-reltool
-          #- libcurl4-openssl-dev
+          - libcurl4-openssl-dev
           - libnspr4-dev
           - libicu-dev
           - icu-devtools
