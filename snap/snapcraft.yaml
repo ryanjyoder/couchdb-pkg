@@ -4,7 +4,7 @@ summary: Document based database
 description: CouchDB is a database that completely embraces the web. Store your data with JSON documents. Access your documents and query your indexes with your web browser, via HTTP. Index, combine, and transform your documents with JavaScript. 
 confinement: strict
 grade: stable
-base: core
+base: core18
 
 apps:
     server:
@@ -65,7 +65,6 @@ parts:
         plugin: nil
         source: .
         stage-packages:
-          - libicu55
           - libnspr4
           - libicu-dev
         build-packages:
@@ -74,6 +73,8 @@ parts:
           - zip 
           - pkg-kde-tools 
           - pkg-config
+          - libffi-dev
+          - libnspr4-dev
         override-build: |
           make couch-js-debs PLATFORM=bionic
           ls -1 js/ | grep ".deb$" | xargs -i++ dpkg -x js/++ .
