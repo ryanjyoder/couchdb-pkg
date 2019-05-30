@@ -74,6 +74,7 @@ parts:
           - zip 
           - pkg-kde-tools 
           - pkg-config
+          - libffi-dev
         override-build: |
           make couch-js-debs PLATFORM=bionic
           ls -1 js/ | grep ".deb$" | xargs -i++ dpkg -x js/++ .
