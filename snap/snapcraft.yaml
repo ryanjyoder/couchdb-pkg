@@ -34,7 +34,7 @@ parts:
           - erlang-dev
           - erlang-base
           - erlang-reltool
-          - libcurl4-openssl-dev
+            #- libcurl4-openssl-dev
           - libnspr4-dev
           - libicu-dev
           - icu-devtools
@@ -44,7 +44,8 @@ parts:
           - erlang-syntax-tools
           # For fauxton
           - nodejs-dev
-          - nodejs-legacy
+            #- libssl1.0-dev
+          - nodejs
           - npm
         stage:
             - rel
@@ -65,19 +66,18 @@ parts:
         plugin: nil
         source: .
         stage-packages:
-          - libnspr4
-          - libicu-dev
+           - libnspr4
+           - libicu60
         build-packages:
           - devscripts
           - debhelper
           - zip 
           - pkg-kde-tools 
           - pkg-config
-          - libffi-dev
-          - libnspr4-dev
         override-build: |
+          echo ______________________________ making couch-js-debs ____________________________________
           make couch-js-debs PLATFORM=bionic
-          echo installing libmoz
+          echo ______________________________ installing libmoz _____________________________________
           ls -1 js/ | grep ".deb$" | xargs -i++ dpkg -i js/++ 
           echo extracting libmoz
           ls -1 js/ | grep "\.deb$" | xargs -i++ dpkg -x js/++ .
@@ -89,3 +89,4 @@ parts:
               - "-usr/share/man/*"
         prime:
             - "$exclusion"
+   
