@@ -79,8 +79,9 @@ parts:
           echo ______________________________ making couch-js-debs ____________________________________
           make couch-js-debs PLATFORM=bionic
           echo ______________________________ installing libmoz _____________________________________
-          ls -1 js/ | grep ".deb$" | xargs -i++ dpkg -i js/++ 
+          dpkg -i $( find js/.| grep "\.deb$" ) 
           echo extracting libmoz
+          find js/.| grep "\.deb$" | xargs -i++ dpkg -x ++ .
           ls -1 js/ | grep "\.deb$" | xargs -i++ dpkg -x js/++ .
           mkdir -p $SNAPCRAFT_PART_INSTALL/usr
           cp -ra ./usr/lib $SNAPCRAFT_PART_INSTALL/usr
