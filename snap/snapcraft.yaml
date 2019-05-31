@@ -74,6 +74,7 @@ parts:
           - zip 
           - pkg-kde-tools 
           - pkg-config
+          - libffi-dev
         override-build: |
           echo ______________________________ making couch-js-debs ____________________________________
           make couch-js-debs PLATFORM=bionic
