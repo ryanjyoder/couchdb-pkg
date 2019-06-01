@@ -16,10 +16,10 @@ apps:
 parts:
     couchdb: 
         plugin: make
-        source: http://www-us.apache.org/dist/couchdb/source/2.3.0/apache-couchdb-2.3.0.tar.gz
-        #source: https://github.com/apache/couchdb.git
-        #source-type: git
-        #source-tag: 2.3.0
+        #source: http://www-us.apache.org/dist/couchdb/source/2.3.0/apache-couchdb-2.3.0.tar.gz
+        source: https://github.com/apache/couchdb.git
+        source-type: git
+        source-tag: 2.3.0
         override-build: |
           ./configure --disable-docs
           make release
