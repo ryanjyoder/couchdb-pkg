@@ -7,9 +7,7 @@ description: |
   browser, via HTTP. Index, combine, and transform your documents with
   JavaScript. 
 
-#architectures:
-#  - build-on: amd64
-#    run-on: amd64
+
 assumes: [command-chain, common-data-dir]
 base: core18
 grade: stable
