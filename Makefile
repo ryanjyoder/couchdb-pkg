@@ -24,6 +24,8 @@ PKGDIR=$(COUCHDIR)
 
 ifeq ($(shell arch),aarch64)
 PKGARCH=arm64
+else ifeq ($(shell arch),arm64v8)
+PKGARCH=arm64
 else
 PKGARCH=$(shell arch)
 endif
@@ -44,10 +46,25 @@ debian-stretch: DIST=debian-stretch
 debian-stretch: stretch
 # AArch64 Debian 9
 # Lintian doesn't install correctly into a cross-built Docker container ?!
+arm64v8-debian-stretch: aarch64-debian-stretch
 aarch64-debian-stretch: PLATFORM=stretch
 aarch64-debian-stretch: DIST=debian-stretch
 aarch64-debian-stretch: debian-no-lintian
+ppc64le-debian-stretch: PLATFORM=stretch
+ppc64le-debian-stretch: DIST=debian-stretch
+ppc64le-debian-stretch: stretch
 stretch: debian
+
+# Debian 10
+debian-buster: PLATFORM=buster
+debian-buster: DIST=debian-buster
+debian-buster: buster
+# Lintian doesn't install correctly into a cross-built Docker container ?!
+arm64v8-debian-buster: aarch64-debian-buster
+aarch64-debian-buster: PLATFORM=buster
+aarch64-debian-buster: DIST=debian-buster
+aarch64-debian-buster: debian-no-lintian
+buster: debian
 
 
 # Ubuntu 12.04
@@ -100,22 +117,11 @@ centos-7: DIST=centos-7
 centos-7: centos7
 centos7: make-rpmbuild centos
 
-openSUSE: centos7
+centos-8: DIST=centos-8
+centos-8: centos8
+centos8: make-rpmbuild centos
 
-# Erlang is built from source on ARMv8
-# These packages are not installed, but the files are present
-drop-deb-deps-for-source-arch:
-	if [ "$(shell arch)" = "aarch64" ]; then                          \
-		sed -i '/erlang-dev/d' $(DISTDIR)/debian/control;         \
-		sed -i '/erlang-crypto/d' $(DISTDIR)/debian/control;      \
-		sed -i '/erlang-dialyzer/d' $(DISTDIR)/debian/control;    \
-		sed -i '/erlang-eunit/d' $(DISTDIR)/debian/control;       \
-		sed -i '/erlang-inets/d' $(DISTDIR)/debian/control;       \
-		sed -i '/erlang-xmerl/d' $(DISTDIR)/debian/control;       \
-		sed -i '/erlang-os-mon/d' $(DISTDIR)/debian/control;      \
-		sed -i '/erlang-reltool/d' $(DISTDIR)/debian/control;     \
-		sed -i '/erlang-syntax-tools/d' $(DISTDIR)/debian/control;\
-	fi
+openSUSE: centos7
 
 # ######################################
 get-couch:
@@ -144,7 +150,7 @@ copy-debian:
 	rm -rf $(DISTDIR)/debian
 	cp -R debian $(DISTDIR)
 
-update-changelog: drop-deb-deps-for-source-arch
+update-changelog:
 	cd $(DISTDIR) && dch -v $(VERSION)~$(PLATFORM) $(DEBCHANGELOG)
 
 dpkg:

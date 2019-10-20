@@ -1,94 +1,119 @@
 name: couchdb-ryanjyoder
-version: 2.3.1-RC2
-summary: Document based database
-description: CouchDB is a database that completely embraces the web. Store your data with JSON documents. Access your documents and query your indexes with your web browser, via HTTP. Index, combine, and transform your documents with JavaScript. 
-confinement: strict
-grade: stable
+version: 2.3.1
+summary: Official Apache CouchDB snap - a clustering document oriented database
+description: |
+  CouchDB is a database that completely embraces the web. Store your data with
+  JSON documents. Access your documents and query your indexes with your web
+  browser, via HTTP. Index, combine, and transform your documents with
+  JavaScript. 
+
+architectures:
+  - build-on: amd64
+    run-on: amd64
+assumes: [command-chain, common-data-dir]
 base: core18
+grade: stable
+confinement: strict
+
+parts:
+  add-repo:
+    plugin: nil
+    override-pull: |
+      apt-get update
+      apt-get upgrade -yy
+      apt-get install -y --no-install-recommends apt-transport-https gnupg ca-certificates
+      echo "deb https://apache.bintray.com/couchdb-deb bionic main" | tee /etc/apt/sources.list.d/custom.list
+      apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8756C4F765C9AC3CB6B85D62379CE192D401AB61
+      apt-get update
+  couchdb: 
+    after: [add-repo]
+    plugin: dump
+    source: https://apache.bintray.com/couchdb-deb/pool/C/CouchDB/couchdb_2.3.1~bionic_amd64.deb
+    source-type: deb
+    # because this doesn't use apt, we have to manually list all of our dependencies :(
+    # the following are all in core18, and warning output can safely be ignored:
+    # lib/x86_64-linux-gnu/libbz2.so.1.0
+    # lib/x86_64-linux-gnu/libc.so.6
+    # lib/x86_64-linux-gnu/libcrypt.so.1
+    # lib/x86_64-linux-gnu/libdl.so.2
+    # lib/x86_64-linux-gnu/libgcrypt.so.20
+    # lib/x86_64-linux-gnu/libgpg-error.so.0
+    # lib/x86_64-linux-gnu/liblzma.so.5
+    # lib/x86_64-linux-gnu/libm.so.6
+    # lib/x86_64-linux-gnu/libncurses.so.5
+    # lib/x86_64-linux-gnu/libncursesw.so.5
+    # lib/x86_64-linux-gnu/libnsl.so.1
+    # lib/x86_64-linux-gnu/libpthread.so.0
+    # lib/x86_64-linux-gnu/libresolv.so.2
+    # lib/x86_64-linux-gnu/librt.so.1
+    # lib/x86_64-linux-gnu/libsystemd.so.0
+    # lib/x86_64-linux-gnu/libutil.so.1
+    # lib/x86_64-linux-gnu/libz.so.1
+    # usr/lib/x86_64-linux-gnu/libdb-5.3.so
+    # usr/lib/x86_64-linux-gnu/liblz4.so.1
+    # usr/lib/x86_64-linux-gnu/libpanelw.so.5
+    # usr/lib/x86_64-linux-gnu/libstdc++.so.6
+    stage-packages:
+      - ca-certificates
+      - adduser
+      - curl
+      - debconf
+      - init-system-helpers
+      - couch-libmozjs185-1.0
+      - lsb-base
+      - procps
+      - python3
+      - python3-requests
+      - libcurl4
+      - libgcc1
+      - libicu60
+      - libssl1.0.0
+      - libtinfo5
+    override-pull: |
+      snapcraftctl pull
+      rm -f opt/couchdb/data opt/couchdb/var/log opt/couchdb/etc/default.d/*
+      mkdir -p opt/couchdb/etc/default.d.dist/
+      mv opt/couchdb/etc/vm.args opt/couchdb/etc/vm.args.dist
+      mv opt/couchdb/etc/local.ini opt/couchdb/etc/local.ini.dist
+    override-build: |
+      echo "couchdb couchdb/mode select none" | debconf-set-selections
+      snapcraftctl build
+
+layout:
+  # Database and log files are common across upgrades
+  $SNAP/opt/couchdb/data:
+    bind: $SNAP_COMMON/data
+  $SNAP/opt/couchdb/var/log:
+    bind: $SNAP_COMMON/log
+  # Local configuration files may change across upgrades
+  $SNAP/opt/couchdb/etc/vm.args:
+    bind-file: $SNAP_DATA/etc/vm.args
+  $SNAP/opt/couchdb/etc/local.d:
+    bind: $SNAP_DATA/etc/local.d
+  $SNAP/opt/couchdb/etc/local.ini:
+    bind-file: $SNAP_DATA/etc/local.ini
+  # We do not bind default.ini or default.d/ as these are intended to be immutable
+  
+environment:
+  COUCHDB_ARGS_FILE: ${SNAP_DATA}/etc/vm.args
+  ERL_FLAGS: "-couch_ini ${SNAP}/opt/couchdb/etc/default.ini ${SNAP}/opt/couchdb/etc/default.d ${SNAP_DATA}/etc/local.ini ${SNAP_DATA}/etc/local.d"
 
 apps:
-    server:
-        daemon: simple
-        command: rel/couchdb/bin/snap_run
-        plugs: [network-bind, process-control]
-        environment:
-            LD_LIBRARY_PATH: $SNAP/usr/lib:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
-parts:
-    couchdb: 
-        plugin: make
-        #source: http://www-us.apache.org/dist/couchdb/source/2.3.0/apache-couchdb-2.3.0.tar.gz
-        source: https://github.com/apache/couchdb.git
-        source-type: git
-        source-tag: 2.3.1-RC2
-        override-build: |
-          ./configure --disable-docs
-          make release
-          cp -ra ./rel $SNAPCRAFT_PART_INSTALL
-          cp -ra ./bin $SNAPCRAFT_PART_INSTALL
-        build-packages:
-          - binutils
-          - libc6-dev
-          - gcc
-          - g++
-          - make
-          - erlang-dev
-          - erlang-base
-          - erlang-reltool
-            #- libcurl4-openssl-dev
-          - libnspr4-dev
-          - libicu-dev
-          - icu-devtools
-          # For erlang/rebar processing
-          - erlang-nox
-          - erlang-os-mon
-          - erlang-syntax-tools
-          # For fauxton
-          - nodejs-dev
-            #- libssl1.0-dev
-          - nodejs
-          - npm
-        stage:
-            - rel
-            - bin
-        prime:
-            - rel
-            - bin
-        after: [packages]
-
-    snap-config:
-        plugin: dump
-        source: ./snap/local/
-        organize:
-            couchdb.ini: rel/couchdb/etc/default.d/couchdb.ini
-            snap_run: rel/couchdb/bin/snap_run
-
-    packages:
-        plugin: nil
-        source: .
-        stage-packages:
-           - libnspr4
-           - libicu60
-        build-packages:
-          - devscripts
-          - debhelper
-          - zip 
-          - pkg-kde-tools 
-          - pkg-config
-          - libffi-dev
-        override-build: |
-          echo ______________________________ making couch-js-debs ____________________________________
-          make couch-js-debs PLATFORM=bionic
-          echo ______________________________ installing libmoz _____________________________________
-          dpkg -i $( find js/.| grep "\.deb$" ) 
-          echo extracting libmoz
-          find js/.| grep "\.deb$" | xargs -i++ dpkg -x ++ .
-          ls -1 js/ | grep "\.deb$" | xargs -i++ dpkg -x js/++ .
-          mkdir -p $SNAPCRAFT_PART_INSTALL/usr
-          cp -ra ./usr/lib $SNAPCRAFT_PART_INSTALL/usr
-        filesets:
-            exclusion:
-              - "-usr/share/doc/*"
-              - "-usr/share/man/*"
-        prime:
-            - "$exclusion"
-   
+  couchdb:
+    adapter: full
+    command: opt/couchdb/bin/couchdb
+    plugs: [network, network-bind, process-control, mount-observe]
+  server:
+    daemon: simple
+    adapter: full
+    command: opt/couchdb/bin/couchdb
+    plugs: [network, network-bind, process-control, mount-observe]
+  remsh:
+    command: opt/couchdb/bin/remsh
+    plugs: [network, network-bind]
+  couchup:
+    command: opt/couchdb/bin/couchup
+    plugs: [network, network-bind]
+  couchjs:
+    command: opt/couchdb/bin/couchjs
+    plugs: [network, network-bind]
