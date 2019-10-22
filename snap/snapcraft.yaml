@@ -20,8 +20,9 @@ parts:
     override-build: |
       make couch-js-debs PLATFORM=bionic
       sudo dpkg -i js/*.deb
-      sudo dpkg-deb -R js/couch-libmozjs185-1.0*.deb .
-      sudo mv usr $SNAPCRAFT_PART_INSTALL
+      dpkg-deb -R js/couch-libmozjs185-1.0*.deb .
+      mkdir -p $SNAPCRAFT_PART_INSTALL/usr
+      rsync usr $SNAPCRAFT_PART_INSTALL
     build-packages:
       - devscripts
       - debhelper
@@ -30,6 +31,7 @@ parts:
       - pkg-kde-tools 
       - pkg-config
       - zip
+      - rsync
     stage-packages:
       - libnspr4
     stage:
