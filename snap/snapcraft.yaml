@@ -30,6 +30,8 @@ parts:
       - pkg-kde-tools 
       - pkg-config
       - zip
+    stage-packages:
+      - libnspr4
     stage:
       - usr
     prime:
@@ -92,6 +94,7 @@ parts:
       - libicu60
       - libssl1.1
       - libtinfo5
+      - libnspr4
 
 
 layout:
