@@ -14,50 +14,75 @@ grade: stable
 confinement: strict
 
 parts:
-  add-repo:
-    plugin: nil
-    override-pull: |
-      apt-get update
-      apt-get upgrade -yy
-      apt-get install -y --no-install-recommends apt-transport-https gnupg ca-certificates
-      echo "deb https://apache.bintray.com/couchdb-deb bionic main" | tee /etc/apt/sources.list.d/custom.list
-      apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8756C4F765C9AC3CB6B85D62379CE192D401AB61
-      apt-get update
+  libmozjs185:
+    plugin: make
+    source: .
+    override-build: |
+      make couch-js-debs PLATFORM=bionic
+      sudo dpkg -i js/*.deb
+      sudo dpkg-deb -R js/couch-libmozjs185-1.0*.deb .
+      sudo mv usr $SNAPCRAFT_PART_INSTALL
+    build-packages:
+      - devscripts
+      - debhelper
+      - libffi-dev
+      - libnspr4-dev
+      - pkg-kde-tools 
+      - pkg-config
+      - zip
+    stage:
+      - usr
+    prime:
+      - usr
+
+
   couchdb: 
-    after: [add-repo]
-    plugin: dump
-    source: https://apache.bintray.com/couchdb-deb/pool/C/CouchDB/couchdb_2.3.1~bionic_amd64.deb
-    source-type: deb
-    # because this doesn't use apt, we have to manually list all of our dependencies :(
-    # the following are all in core18, and warning output can safely be ignored:
-    # lib/x86_64-linux-gnu/libbz2.so.1.0
-    # lib/x86_64-linux-gnu/libc.so.6
-    # lib/x86_64-linux-gnu/libcrypt.so.1
-    # lib/x86_64-linux-gnu/libdl.so.2
-    # lib/x86_64-linux-gnu/libgcrypt.so.20
-    # lib/x86_64-linux-gnu/libgpg-error.so.0
-    # lib/x86_64-linux-gnu/liblzma.so.5
-    # lib/x86_64-linux-gnu/libm.so.6
-    # lib/x86_64-linux-gnu/libncurses.so.5
-    # lib/x86_64-linux-gnu/libncursesw.so.5
-    # lib/x86_64-linux-gnu/libnsl.so.1
-    # lib/x86_64-linux-gnu/libpthread.so.0
-    # lib/x86_64-linux-gnu/libresolv.so.2
-    # lib/x86_64-linux-gnu/librt.so.1
-    # lib/x86_64-linux-gnu/libsystemd.so.0
-    # lib/x86_64-linux-gnu/libutil.so.1
-    # lib/x86_64-linux-gnu/libz.so.1
-    # usr/lib/x86_64-linux-gnu/libdb-5.3.so
-    # usr/lib/x86_64-linux-gnu/liblz4.so.1
-    # usr/lib/x86_64-linux-gnu/libpanelw.so.5
-    # usr/lib/x86_64-linux-gnu/libstdc++.so.6
+    after: [libmozjs185]
+    plugin: make
+    # source: http://www-us.apache.org/dist/couchdb/source/2.2.0/apache-couchdb-2.2.0.tar.gz
+    source: https://github.com/apache/couchdb.git
+    source-type: git
+    #source-tag: 2.2.0
+    override-build: |
+      export TRAVIS=true
+      ./configure --disable-docs
+      make release
+      cp -ra ./rel $SNAPCRAFT_PART_INSTALL
+      cp -ra ./bin $SNAPCRAFT_PART_INSTALL
+    build-packages:
+      - binutils
+      - libc6-dev
+      - gcc
+      - g++
+      - make
+      - libnspr4-dev
+      - libicu-dev
+      - icu-devtools
+      # For fauxton
+      - nodejs
+      #- libssl-dev
+      - libssl1.0-dev
+      - npm
+      - erlang-dev
+      - erlang-base
+      - erlang-reltool
+      # For erlang/rebar processing
+      - erlang-nox
+      - erlang-os-mon
+      - erlang-syntax-tools
+    stage:
+        - rel
+        - bin
+    prime:
+        - rel
+        - bin
     stage-packages:
       - ca-certificates
       - adduser
       - curl
       - debconf
       - init-system-helpers
-      - couch-libmozjs185-1.0
+      # - couch-libmozjs185-1.0
       - lsb-base
       - procps
       - python3
@@ -65,17 +90,9 @@ parts:
       - libcurl4
       - libgcc1
       - libicu60
-      - libssl1.0.0
+      - libssl1.1
       - libtinfo5
-    override-pull: |
-      snapcraftctl pull
-      rm -f opt/couchdb/data opt/couchdb/var/log opt/couchdb/etc/default.d/*
-      mkdir -p opt/couchdb/etc/default.d.dist/
-      mv opt/couchdb/etc/vm.args opt/couchdb/etc/vm.args.dist
-      mv opt/couchdb/etc/local.ini opt/couchdb/etc/local.ini.dist
-    override-build: |
-      echo "couchdb couchdb/mode select none" | debconf-set-selections
-      snapcraftctl build
+
 
 layout:
   # Database and log files are common across upgrades
